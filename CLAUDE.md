@@ -40,8 +40,8 @@ migration in `src/lib/store.ts` (`isValidGame` throws away anything that does no
   candidates for any two crossing units, so it also works on jigsaw and Samurai, and naked pairs/triples).
 - Generator: `src/lib/generate.ts`, deterministic per (variant, level, seed) with `mulberry32`. Random full grid, then
   digits leave in 180° mirror pairs. Easy: stays solvable with singles, ≥47% of cells given. Medium: solvable with level-2
-  logic, ≥39%. Hard: unique by search, down to 29%, then single cells too; retried (6× for 81 cells, 2× Samurai) until it
-  needs more than singles. Logic-solvable ⇒ unique, so every puzzle has exactly one solution. `generateSteps` yields between
+  logic, ≥39%. Hard: unique by search, down to 29%, then single cells too; retried (up to 6 grids) until it needs more than
+  singles. Logic-solvable ⇒ unique, so every puzzle has exactly one solution. `generateSteps` yields between
   removals; the store runs it in ~24 ms slices (`startNew`) and the board shows "Se pregătește grila…" with progress.
   No Web Worker on purpose (a separate chunk would not be in the offline precache until first used).
 - Game: `src/lib/game.ts` (pure): values (givens included), notes masks, hinted cells, clock. A digit clears that digit from

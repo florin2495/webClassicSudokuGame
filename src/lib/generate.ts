@@ -6,7 +6,8 @@
 //    - medium: solvable with singles, locked candidates and naked pairs/triples, at least 39% given;
 //    - hard:   exactly one solution (proven by search), down to 29% given, then single cells too.
 //    Logic-solvable means unique, so every level has exactly one solution.
-// 3. Hard: if the result still falls to singles alone, try again with a new grid (a few times).
+// 3. Hard: if the result still falls to singles alone, try again with a new grid (up to 6 grids; each takes
+//    well under 100 ms, even for a Samurai).
 // `generateSteps` yields between removals so the page can run it in slices without freezing.
 import { geometry, type Geometry, type Variant } from "./geometry";
 import { solvableAt } from "./logic";
@@ -85,7 +86,7 @@ export function* generateSteps(variant: Variant, level: Level, seed: number): Ge
   const g = geometry(variant);
   const rng = mulberry32(seed);
   const minGivens = Math.ceil(g.cells.length * MIN_GIVEN_SHARE[level]);
-  const attempts = level === "hard" ? (g.cells.length > 81 ? 2 : 6) : 1;
+  const attempts = level === "hard" ? 6 : 1;
   let puzzle: Puzzle | null = null;
 
   for (let attempt = 0; attempt < attempts; attempt++) {

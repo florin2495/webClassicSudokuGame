@@ -38,6 +38,7 @@ describe("generator", () => {
         expect(Array.from(r.solutions[0]).join("")).toBe(p.solution);
         if (level === "easy") expect(solvableAt(g, grid, 1)).toBe(true);
         if (level === "medium") expect(solvableAt(g, grid, 2)).toBe(true);
+        if (level === "hard") console.log(`${variant} hard needs more than singles: ${!solvableAt(g, grid, 1)}`);
         // Generation must stay quick enough for a phone (CI machines are not slower than a phone by more than ~3×).
         expect(ms).toBeLessThan(variant === "samurai" ? 20_000 : 5_000);
       }, 120_000);
