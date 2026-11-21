@@ -1,0 +1,42 @@
+name: E2E UI (Playwright)
+
+# Manual only (Actions tab > Run workflow, or `gh workflow run e2e-ui.yml --ref main [-f base_url=...]`).
+# Plays the deployed game in real browsers: desktop Chromium and an emulated Android phone (Pixel 7, Chromium).
+# Everything stays in the browser (no database). Run it after the Vercel deploy of the version under test.
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL including /classicsudoku"
+        required: true
+        default: "https://games.hailatat.icu/classicsudoku"
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Playwright
+        env:
+          E2E_BASE_URL: ${{ inputs.base_url }}
+        run: npx playwright test
+      - name: Upload report (traces, screenshots, videos)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  --felt: #0b7a2e;
+  --felt-dark: #075a21;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  background: var(--felt);
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: radial-gradient(ellipse at 50% 35%, #129a3c 0%, var(--felt) 55%, var(--felt-dark) 100%);
+  color: #fff;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Win: a golden wave runs over the grid, from the top-left corner. */
+.wave {
+  fill: #facc15;
+  opacity: 0;
+  animation: wave 0.75s ease-in-out forwards;
+}
+@keyframes wave {
+  0% { opacity: 0; }
+  40% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave { animation: none; }
+}
