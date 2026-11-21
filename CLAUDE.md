@@ -10,8 +10,8 @@ same PWA, update button, menu, feedback and test setup.
 ## Accounts and deploy
 - GitHub: personal account **florin2495** only (repo `florin2495/webClassicSudokuGame`, public). Never the work account.
   Local git identity is pinned in `.git/config`.
-- The user connects the repo to Vercel by hand (suggested project name `013web-classic-sudoku-game`, domain
-  `013web-classic-sudoku-game.vercel.app`). Once connected, every push to `main` deploys to production:
+- The user connects the repo to Vercel by hand: project `013_web-classic-sudoku-game`, domain
+  `013web-classic-sudoku-game.vercel.app` (Vercel drops the `_`, like `012_web-classic-solitaire-game`). Once connected, every push to `main` deploys to production:
   https://games.hailatat.icu/classicsudoku (the hub proxies `/classicsudoku/*` to this project; `basePath: "/classicsudoku"`
   in `next.config.ts`, zone in the hub's `next.config.ts`).
 - `vercel.json` pins `"framework": "nextjs"` and `"regions": ["fra1"]` (Frankfurt, next to the Supabase DB). Never remove it.
