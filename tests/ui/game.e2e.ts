@@ -44,6 +44,21 @@ test("a classic easy sudoku played to the end with the pad: win wave, result, st
   await expect(page.getByTestId("stat-classic-easy")).toContainText("1/1");
 });
 
+test("the result dialog closed with × stays closed after a reload", async ({ page }, info) => {
+  const pz = await openPuzzle(page, "classic", "easy", 4343);
+  for (const p of emptyCells(pz)) await write(page, info, p, solutionAt(pz, p));
+  const result = page.getByTestId("win-dialog");
+  await expect(result).toBeVisible({ timeout: 10_000 });
+  await hit(result.getByRole("button", { name: "Închide" }), info);
+  await expect(result).toHaveCount(0);
+  await expect.poll(() => page.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? "{}").resultClosed, KEY_GAME)).toBe(true);
+
+  await page.reload();
+  await expect(page.locator("[data-cell]")).toHaveCount(81);
+  await expect(page.getByTestId("digit-1")).toBeVisible();
+  await expect(result).toHaveCount(0);
+});
+
 test("notes, erase, undo, clashes in red", async ({ page }, info) => {
   const pz = await openPuzzle(page, "classic", "medium", 77);
   const geo = geometry("classic");

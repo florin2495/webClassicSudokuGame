@@ -50,6 +50,9 @@ describe("store", () => {
     expect(s.stats[statsKey("classic", "medium")]).toEqual({ played: 1, won: 1, bestMs: 5000 });
     actions.markCelebrated();
     expect(getSnapshot().game?.celebrated).toBe(true);
+    expect(getSnapshot().game?.resultClosed).toBe(false);
+    actions.closeResult();
+    expect(getSnapshot().game?.resultClosed).toBe(true);
   });
 
   it("hint and all notes are undoable moves", () => {

@@ -44,7 +44,6 @@ export function Sudoku() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [flashPos, setFlashPos] = useState<number | null>(null);
-  const [winClosedSeed, setWinClosedSeed] = useState<number | null>(null);
 
   const game = snap?.game ?? null;
   const generating = snap?.generating ?? null;
@@ -430,8 +429,8 @@ export function Sudoku() {
         />
       )}
 
-      {game && game.won && game.celebrated && winClosedSeed !== game.seed && !dialogOpen && !menuOpen && !generating && (
-        <Modal title="Felicitări! 🎉" onClose={() => setWinClosedSeed(game.seed)} testId="win-dialog">
+      {game && game.won && game.celebrated && !game.resultClosed && !dialogOpen && !menuOpen && !generating && (
+        <Modal title="Felicitări! 🎉" onClose={() => actions.closeResult()} testId="win-dialog">
           <p className="mb-1 text-lg font-semibold">Ai rezolvat sudoku-ul!</p>
           <dl className="mb-4 grid grid-cols-2 gap-y-1 text-sm">
             <dt>Tipul</dt>

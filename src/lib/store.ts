@@ -263,6 +263,11 @@ export const actions = {
     const cur = getSnapshot();
     if (cur.game?.won && !cur.game.celebrated) commit({ ...cur, game: { ...cur.game, celebrated: true } });
   },
+  /** The result dialog was closed: saved, so a reload does not bring it back. */
+  closeResult() {
+    const cur = getSnapshot();
+    if (cur.game?.won && !cur.game.resultClosed) commit({ ...cur, game: { ...cur.game, resultClosed: true } });
+  },
   resetStats() {
     const cur = getSnapshot();
     commit({ ...cur, stats: {} }, false);

@@ -166,5 +166,11 @@ describe("game", () => {
     expect(isValidGame({ ...g, values: g.values.slice(1) })).toBe(false);
     expect(isValidGame({ ...g, notes: g.notes.map(() => 600) })).toBe(false);
     expect(isValidGame({ ...g, givens: g.givens.replace("5", "x") })).toBe(false);
+    // Saves from before `resultClosed` still load (treated as not closed); a wrong type does not.
+    const { resultClosed, ...old } = g;
+    expect(resultClosed).toBe(false);
+    expect(isValidGame(JSON.parse(JSON.stringify(old)))).toBe(true);
+    expect(isValidGame({ ...g, resultClosed: true })).toBe(true);
+    expect(isValidGame({ ...g, resultClosed: "yes" })).toBe(false);
   });
 });

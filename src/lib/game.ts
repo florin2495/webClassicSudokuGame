@@ -23,6 +23,8 @@ export interface GameState {
   won: boolean;
   /** The win animation has been shown (no replay after a reload). */
   celebrated: boolean;
+  /** The player closed the result dialog (it stays closed after a reload). Missing in older saves = not closed. */
+  resultClosed?: boolean;
   moves: number;
   hints: number;
 }
@@ -47,6 +49,7 @@ export function newGame(puzzle: Puzzle): GameState {
     started: false,
     won: false,
     celebrated: false,
+    resultClosed: false,
     moves: 0,
     hints: 0,
   };
@@ -214,6 +217,7 @@ export function isValidGame(x: unknown): x is GameState {
     typeof g.started === "boolean" &&
     typeof g.won === "boolean" &&
     typeof g.celebrated === "boolean" &&
+    (g.resultClosed === undefined || typeof g.resultClosed === "boolean") &&
     typeof g.moves === "number" &&
     typeof g.hints === "number"
   );
