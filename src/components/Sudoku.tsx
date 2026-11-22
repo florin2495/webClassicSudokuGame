@@ -362,24 +362,34 @@ export function Sudoku() {
         {game && left && !generating && (
           <section className="shrink-0 bg-black/15 px-2 py-1.5 landscape:flex landscape:w-60 landscape:flex-col landscape:justify-center" aria-label="Cifre">
             <div className="grid grid-cols-9 gap-1 landscape:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  data-testid={`digit-${d}`}
-                  onClick={() => input(d)}
-                  disabled={game.won}
-                  aria-label={notesMode ? `Notiță ${d}` : `Cifra ${d}`}
-                  className={`relative flex min-h-12 items-center justify-center rounded-lg font-bold shadow-sm active:brightness-90 disabled:opacity-40 ${
-                    notesMode ? "bg-amber-100 text-xl text-amber-900" : "bg-white text-2xl text-green-950"
-                  } ${left[d] <= 0 ? "opacity-40" : ""}`}
-                >
-                  {d}
-                  <span className="absolute right-1 bottom-0.5 text-[10px] font-semibold text-zinc-500" aria-hidden>
-                    {left[d] > 0 ? left[d] : ""}
-                  </span>
-                </button>
-              ))}
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => {
+                // left < 0: the digit is on the board more times than it fits (a wrong extra one): not dimmed like a
+                // finished digit, a red ring and a red "−n" instead.
+                const extra = left[d] < 0;
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    data-testid={`digit-${d}`}
+                    data-left={left[d]}
+                    onClick={() => input(d)}
+                    disabled={game.won}
+                    aria-label={`${notesMode ? `Notiță ${d}` : `Cifra ${d}`}${extra ? `, pusă de ${-left[d]} ori în plus` : ""}`}
+                    className={`relative flex min-h-12 items-center justify-center rounded-lg font-bold shadow-sm active:brightness-90 disabled:opacity-40 ${
+                      notesMode ? "bg-amber-100 text-xl text-amber-900" : "bg-white text-2xl text-green-950"
+                    } ${left[d] === 0 ? "opacity-40" : ""} ${extra ? "ring-2 ring-red-600 ring-inset" : ""}`}
+                  >
+                    {d}
+                    <span
+                      className={`absolute right-1 bottom-0.5 text-[10px] font-semibold ${extra ? "font-bold text-red-600" : "text-zinc-500"}`}
+                      data-testid={`digit-${d}-left`}
+                      aria-hidden
+                    >
+                      {left[d] > 0 ? left[d] : extra ? `−${-left[d]}` : ""}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             <div className={`mt-1.5 grid gap-1 ${zoomable ? "grid-cols-4" : "grid-cols-3"} landscape:grid-cols-2`}>
               <ToolButton testId="notes" icon="✏️" label={notesMode ? "Notițe: DA" : "Notițe: nu"} pressed={notesMode} onClick={() => setNotesMode((m) => !m)} />

@@ -55,12 +55,12 @@ migration in `src/lib/store.ts` (`isValidGame` throws away anything that does no
   it differs from the solution).
 - UI: `src/components/Sudoku.tsx` + `Board.tsx` (one SVG, 10 units per cell, `vector-effect: non-scaling-stroke` lines:
   thick on region borders and the outer edge). Pad below the board (portrait) or beside it (`landscape:`): digits 1-9 with
-  how many are still missing, "Notițe", "Șterge", "Toate notițele", and "Mărește / Toată grila" on a Samurai whose cells
+  how many are still missing (a digit written too often: red ring and a red "−n", not dimmed like a finished one), "Notițe", "Șterge", "Toate notițele", and "Mărește / Toată grila" on a Samurai whose cells
   are smaller than 42 px. On a phone (cells < 26 px) a tap on the Samurai zooms in to 42 px cells and scrolls to the
   cell (the board area scrolls natively, `touch-action: pan-x pan-y`).
 - New game: dialog "Sudoku nou" (type + level, warns when a game in progress would be lost), opened by itself on a first
   visit. Win: a golden wave over the grid (`.wave`, `waveMs`), a tap skips it, then the result ("Încă unul la fel" /
-  "Alt tip"); `celebrated` stops a replay after a reload. Stats per `variant:level` (played at the first digit or note,
+  "Alt tip"); `celebrated` stops a replay after a reload; `resultClosed` (optional, missing = not closed) keeps the result closed after ×. Stats per `variant:level` (played at the first digit or note,
   won, best time).
 - Store: `src/lib/store.ts`, module-level store for `useSyncExternalStore` (no setState in effects), saved on every change.
   `?seed=N&type=classic|samurai|tree&level=easy|medium|hard` generates a fixed puzzle (tests); removed from the URL at once.
@@ -87,7 +87,7 @@ All checks run in GitHub Actions on the free tier (public repo, `ubuntu-latest` 
   2026-11-21).
 - Playwright files are `*.e2e.ts`, never `*.spec.ts` / `*.test.ts` (Vitest would pick those up).
 - UI tests use `data-cell` / `data-value` / `data-given` / `data-notes` / `data-shade` on the cells and `data-testid`:
-  `board`, `grid` (with `data-variant`), `game-label`, `time`, `generating`, `welcome-new`, `digit-1`..`digit-9`, `notes`,
+  `board`, `grid` (with `data-variant`), `game-label`, `time`, `generating`, `welcome-new`, `digit-1`..`digit-9` (with `data-left`), `digit-<d>-left`, `notes`,
   `erase`, `fill-notes`, `zoom`, `new-game`, `undo`, `hint`, `menu-open`, `menu`, `setting-mistakes`, `setting-timer`,
   `stats`, `stat-<variant>-<level>`, `app-version`, `newgame-dialog`, `variant-<v>`, `level-<l>`, `newgame-warning`,
   `start-game`, `toast`, `win-wave`, `win-dialog`, `win-time`, `win-hints`, `win-new-game`, `win-other`, `update-reload`,

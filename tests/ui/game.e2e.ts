@@ -59,6 +59,29 @@ test("the result dialog closed with × stays closed after a reload", async ({ pa
   await expect(result).toHaveCount(0);
 });
 
+test("pad: a digit written once too many shows a red −1, not the dimmed look of a finished digit", async ({ page }, info) => {
+  const pz = await openPuzzle(page, "classic", "easy", 66);
+  const empties = emptyCells(pz);
+  // The digit with the fewest missing places (at least one).
+  const missing = (d: number) => empties.filter((p) => solutionAt(pz, p) === d);
+  const d = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter((x) => missing(x).length > 0).sort((a, b) => missing(a).length - missing(b).length)[0];
+  const pad = page.getByTestId(`digit-${d}`);
+  for (const p of missing(d)) await write(page, info, p, d);
+  // All placed: dimmed, no count.
+  await expect(pad).toHaveAttribute("data-left", "0");
+  await expect(pad).toHaveClass(/(^|\s)opacity-40(\s|$)/);
+  await expect(page.getByTestId(`digit-${d}-left`)).toHaveText("");
+  // One more, in a cell that needs another digit.
+  const extra = empties.find((p) => solutionAt(pz, p) !== d)!;
+  await write(page, info, extra, d);
+  await expect(pad).toHaveAttribute("data-left", "-1");
+  await expect(pad).not.toHaveClass(/(^|\s)opacity-40(\s|$)/);
+  await expect(page.getByTestId(`digit-${d}-left`)).toHaveText("−1");
+  // Erasing it brings back the finished look.
+  await hit(page.getByTestId("erase"), info);
+  await expect(pad).toHaveAttribute("data-left", "0");
+});
+
 test("notes, erase, undo, clashes in red", async ({ page }, info) => {
   const pz = await openPuzzle(page, "classic", "medium", 77);
   const geo = geometry("classic");
