@@ -30,6 +30,8 @@ export function isLevel(x: unknown): x is Level {
 export const MIN_GIVEN_SHARE: Record<Level, number> = { easy: 0.47, medium: 0.39, hard: 0.29 };
 /** Medium: how far it may go when it still falls to singles at MIN_GIVEN_SHARE.medium. */
 export const MEDIUM_DEEP_SHARE = 0.32;
+/** Medium: tries after the 39% floor, per grid, times the cell count (each try is one or two logic solves). */
+const MEDIUM_DEEP_WORK = 48_000;
 /** Grids tried until a medium or hard puzzle needs more than singles. */
 const ATTEMPTS: Record<Level, number> = { easy: 1, medium: 6, hard: 6 };
 
@@ -99,9 +101,9 @@ export function* generateSteps(variant: Variant, level: Level, seed: number): Ge
   const rng = mulberry32(seed);
   const minGivens = Math.ceil(g.cells.length * MIN_GIVEN_SHARE[level]);
   const deepMin = Math.ceil(g.cells.length * MEDIUM_DEEP_SHARE);
-  const deepGroups = level === "medium" ? mirrorPairs(g).length + g.cells.length : 0;
+  const deepTries = level === "medium" ? Math.ceil(MEDIUM_DEEP_WORK / g.cells.length) : 0;
   const attempts = ATTEMPTS[level];
-  const perAttempt = mirrorPairs(g).length + (level === "hard" ? g.cells.length : 0) + deepGroups;
+  const perAttempt = mirrorPairs(g).length + (level === "hard" ? g.cells.length : 0) + deepTries;
   const total = perAttempt * attempts;
   let done = 0;
   let puzzle: Puzzle | null = null;
@@ -126,21 +128,34 @@ export function* generateSteps(variant: Variant, level: Level, seed: number): Ge
       }
     }
 
-    // Medium that still falls to singles: one more pass (mirror pairs, then single cells) down to MEDIUM_DEEP_SHARE.
-    // Every removal that keeps level 2 stays; the pass stops as soon as singles are no longer enough.
-    // At most deepGroups tries per grid, one or two logic solves each.
+    // Medium that still falls to singles: look for the removal that makes it need level 2 (see step 3 above).
     if (level === "medium" && !hardEnough(g, grid, level)) {
       const order = [...shuffle(mirrorPairs(g), rng), ...shuffle(g.cells.map((p) => [p]), rng)];
-      for (const group of order) {
-        done++;
-        if (group.some((p) => grid[p] === 0) || givens - group.length < deepMin) continue;
-        const kept = group.map((p) => grid[p]);
-        for (const p of group) grid[p] = 0;
-        if (solvableAt(g, grid, 2)) {
-          givens -= group.length;
-          if (!solvableAt(g, grid, 1)) break;
-        } else group.forEach((p, i) => (grid[p] = kept[i]));
-        yield Math.min(0.99, done / total);
+      let tries = 0;
+      let found = false;
+      while (!found && tries < deepTries) {
+        let step: number[] | null = null; // first removal that keeps level 2 (and singles)
+        for (const group of order) {
+          if (tries >= deepTries) break;
+          if (group.some((p) => grid[p] === 0) || givens - group.length < deepMin) continue;
+          tries++;
+          done++;
+          const kept = group.map((p) => grid[p]);
+          for (const p of group) grid[p] = 0;
+          if (solvableAt(g, grid, 2)) {
+            if (!solvableAt(g, grid, 1)) {
+              givens -= group.length;
+              found = true;
+              break;
+            }
+            if (!step) step = group;
+          }
+          group.forEach((p, i) => (grid[p] = kept[i]));
+          yield Math.min(0.99, done / total);
+        }
+        if (found || !step || tries >= deepTries) break;
+        for (const p of step) grid[p] = 0;
+        givens -= step.length;
       }
     }
 

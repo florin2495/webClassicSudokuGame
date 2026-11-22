@@ -41,10 +41,9 @@ migration in `src/lib/store.ts` (`isValidGame` throws away anything that does no
 - Generator: `src/lib/generate.ts`, deterministic per (variant, level, seed) with `mulberry32`. Random full grid, then
   digits leave in 180° mirror pairs. Easy: stays solvable with singles, ≥47% of cells given. Medium: solvable with level-2
   logic, down to 39%, and it must NOT fall to singles alone (else it would be an easy one with fewer digits): if it still
-  does at 39%, one more pass (pairs, then single cells) keeps every removal that stays level-2 solvable and stops as
-  soon as singles are no longer enough, down to 32% (`MEDIUM_DEEP_SHARE`); at most one try per group, so the cost is
-  bounded (an earlier "find the single deciding removal" search with ~48 000 / cells tries never finished a pass on the
-  Samurai). Hard: unique by search, down to 29%, then single cells too. Medium and hard
+  does at 39%, every further removal (pairs, then single cells) is tried and the first that makes it need level 2 ends
+  it; otherwise one level-2 removal is made and the search goes on, down to 32% (`MEDIUM_DEEP_SHARE`), with a capped
+  number of tries per grid (~48 000 / cells). Hard: unique by search, down to 29%, then single cells too. Medium and hard
   are retried (up to 6 grids) until they need more than singles. Logic-solvable ⇒ unique, so every puzzle has exactly
   one solution. `generateSteps` yields between removals; the store runs it in ~24 ms slices (`startNew`) and the board shows "Se pregătește grila…" with progress.
   No Web Worker on purpose (a separate chunk would not be in the offline precache until first used).
