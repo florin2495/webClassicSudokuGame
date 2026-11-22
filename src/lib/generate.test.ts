@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generate, generateSteps, LEVELS, MIN_GIVEN_SHARE, mirrorPairs, type Puzzle } from "./generate";
+import { generate, generateSteps, LEVELS, MEDIUM_DEEP_SHARE, MIN_GIVEN_SHARE, mirrorPairs, type Puzzle } from "./generate";
 import { geometry, VARIANTS } from "./geometry";
 import { solvableAt } from "./logic";
 import { hasUniqueSolution, solve } from "./solver";
@@ -28,7 +28,8 @@ describe("generator", () => {
             expect(p.solution[i]).toBe("0");
           } else if (p.givens[i] !== "0") expect(p.givens[i]).toBe(p.solution[i]);
         }
-        expect(n).toBeGreaterThanOrEqual(Math.ceil(g.cells.length * MIN_GIVEN_SHARE[level]));
+        const floor = level === "medium" ? MEDIUM_DEEP_SHARE : MIN_GIVEN_SHARE[level];
+        expect(n).toBeGreaterThanOrEqual(Math.ceil(g.cells.length * floor));
         expect(n).toBeLessThan(g.cells.length * 0.75);
 
         const grid = gridOf(p.givens);
@@ -37,7 +38,10 @@ describe("generator", () => {
         expect(r.solutions).toHaveLength(1);
         expect(Array.from(r.solutions[0]).join("")).toBe(p.solution);
         if (level === "easy") expect(solvableAt(g, grid, 1)).toBe(true);
-        if (level === "medium") expect(solvableAt(g, grid, 2)).toBe(true);
+        if (level === "medium") {
+          expect(solvableAt(g, grid, 2)).toBe(true);
+          expect(solvableAt(g, grid, 1)).toBe(false);
+        }
         if (level === "hard") console.log(`${variant} hard needs more than singles: ${!solvableAt(g, grid, 1)}`);
         // Generation must stay quick enough for a phone (CI machines are not slower than a phone by more than ~3×).
         expect(ms).toBeLessThan(variant === "samurai" ? 20_000 : 5_000);
@@ -71,6 +75,36 @@ describe("generator", () => {
     console.log(`classic average givens: easy ${easy}, medium ${medium}, hard ${hard}`);
     expect(easy).toBeGreaterThan(medium);
     expect(medium).toBeGreaterThan(hard);
+  }, 120_000);
+
+  it("medium needs level-2 logic: not solvable with singles alone, solvable with locked candidates and subsets", () => {
+    // Includes seeds an exploratory test found falling to singles before (classic 1822047756, 233158342, 285298316;
+    // tree 793084455, 647256977).
+    const seeds = {
+      classic: [1822047756, 233158342, 285298316, 1, 2, 3, 4, 5],
+      tree: [793084455, 647256977, 1, 2, 3, 4],
+      samurai: [1, 2],
+    } as const;
+    for (const v of VARIANTS) {
+      const g = geometry(v);
+      for (const seed of seeds[v]) {
+        const t0 = Date.now();
+        const p = generate(v, "medium", seed);
+        const grid = gridOf(p.givens);
+        const n = givensCount(p);
+        console.log(`${v} medium seed ${seed}: ${n}/${g.cells.length} givens (${Math.round((100 * n) / g.cells.length)}%), ${Date.now() - t0} ms`);
+        expect(solvableAt(g, grid, 1), `${v} medium ${seed} falls to singles`).toBe(false);
+        expect(solvableAt(g, grid, 2), `${v} medium ${seed} needs more than level 2`).toBe(true);
+        expect(n).toBeGreaterThanOrEqual(Math.ceil(g.cells.length * MEDIUM_DEEP_SHARE));
+      }
+    }
+  }, 120_000);
+
+  it("easy stays singles-only", () => {
+    for (const v of VARIANTS) {
+      const g = geometry(v);
+      for (const seed of [1, 2, 3]) expect(solvableAt(g, gridOf(generate(v, "easy", seed).givens), 1)).toBe(true);
+    }
   }, 120_000);
 
   it("hard classic puzzles usually need more than singles", () => {

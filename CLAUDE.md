@@ -40,9 +40,12 @@ migration in `src/lib/store.ts` (`isValidGame` throws away anything that does no
   candidates for any two crossing units, so it also works on jigsaw and Samurai, and naked pairs/triples).
 - Generator: `src/lib/generate.ts`, deterministic per (variant, level, seed) with `mulberry32`. Random full grid, then
   digits leave in 180° mirror pairs. Easy: stays solvable with singles, ≥47% of cells given. Medium: solvable with level-2
-  logic, ≥39%. Hard: unique by search, down to 29%, then single cells too; retried (up to 6 grids) until it needs more than
-  singles. Logic-solvable ⇒ unique, so every puzzle has exactly one solution. `generateSteps` yields between
-  removals; the store runs it in ~24 ms slices (`startNew`) and the board shows "Se pregătește grila…" with progress.
+  logic, down to 39%, and it must NOT fall to singles alone (else it would be an easy one with fewer digits): if it still
+  does at 39%, every further removal (pairs, then single cells) is tried and the first that makes it need level 2 ends
+  it; otherwise one level-2 removal is made and the search goes on, down to 32% (`MEDIUM_DEEP_SHARE`), with a capped
+  number of tries per grid (~48 000 / cells). Hard: unique by search, down to 29%, then single cells too. Medium and hard
+  are retried (up to 6 grids) until they need more than singles. Logic-solvable ⇒ unique, so every puzzle has exactly
+  one solution. `generateSteps` yields between removals; the store runs it in ~24 ms slices (`startNew`) and the board shows "Se pregătește grila…" with progress.
   No Web Worker on purpose (a separate chunk would not be in the offline precache until first used).
 - Game: `src/lib/game.ts` (pure): values (givens included), notes masks, hinted cells, clock. A digit clears that digit from
   the notes of every peer; the same digit again clears the cell. "Indiciu" (`findHint`) points at a wrong digit first
