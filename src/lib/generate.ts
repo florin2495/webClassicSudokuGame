@@ -101,8 +101,11 @@ export function* generateSteps(variant: Variant, level: Level, seed: number): Ge
   const rng = mulberry32(seed);
   const minGivens = Math.ceil(g.cells.length * MIN_GIVEN_SHARE[level]);
   const deepMin = Math.ceil(g.cells.length * MEDIUM_DEEP_SHARE);
-  const deepTries = level === "medium" ? Math.ceil(MEDIUM_DEEP_WORK / g.cells.length) : 0;
-  const attempts = ATTEMPTS[level];
+  // Samurai medium keeps the plain 39% pass: the extra search never got through its 369 cells in budget (user's choice,
+  // 2026-11-22); it may fall to singles.
+  const deepMedium = level === "medium" && variant !== "samurai";
+  const deepTries = deepMedium ? Math.ceil(MEDIUM_DEEP_WORK / g.cells.length) : 0;
+  const attempts = level === "medium" && !deepMedium ? 1 : ATTEMPTS[level];
   const perAttempt = mirrorPairs(g).length + (level === "hard" ? g.cells.length : 0) + deepTries;
   const total = perAttempt * attempts;
   let done = 0;
@@ -129,7 +132,7 @@ export function* generateSteps(variant: Variant, level: Level, seed: number): Ge
     }
 
     // Medium that still falls to singles: look for the removal that makes it need level 2 (see step 3 above).
-    if (level === "medium" && !hardEnough(g, grid, level)) {
+    if (deepMedium && !hardEnough(g, grid, level)) {
       const order = [...shuffle(mirrorPairs(g), rng), ...shuffle(g.cells.map((p) => [p]), rng)];
       let tries = 0;
       let found = false;

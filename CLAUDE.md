@@ -43,7 +43,8 @@ migration in `src/lib/store.ts` (`isValidGame` throws away anything that does no
   logic, down to 39%, and it must NOT fall to singles alone (else it would be an easy one with fewer digits): if it still
   does at 39%, every further removal (pairs, then single cells) is tried and the first that makes it need level 2 ends
   it; otherwise one level-2 removal is made and the search goes on, down to 32% (`MEDIUM_DEEP_SHARE`), with a capped
-  number of tries per grid (~48 000 / cells). Hard: unique by search, down to 29%, then single cells too. Medium and hard
+  number of tries per grid (~48 000 / cells). Samurai medium is exempt (user's choice, 2026-11-22): one grid, plain pass
+  to 39%, may fall to singles, because that search never got through its 369 cells within the budget. Hard: unique by search, down to 29%, then single cells too. Medium and hard
   are retried (up to 6 grids) until they need more than singles. Logic-solvable ⇒ unique, so every puzzle has exactly
   one solution. `generateSteps` yields between removals; the store runs it in ~24 ms slices (`startNew`) and the board shows "Se pregătește grila…" with progress.
   No Web Worker on purpose (a separate chunk would not be in the offline precache until first used).
